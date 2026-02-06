@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📧 SMTP Mail Server Setup Lab - Full Guide</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <aside>
+            <h2>MAILER LAB</h2>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Intro & Rules</div>
+                <a href="#welcome" class="nav-item">Guide Purpose</a>
+                <a href="#requirements" class="nav-item">Lab Requirements</a>
+                <a href="#documentation-req" class="nav-item">Documentation Rules</a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Part 1: Rocky Linux</div>
+                <a href="#p1-phase1" class="nav-item">Phase 1: System Config</a>
+                <a href="#p1-phase2" class="nav-item">Phase 2: SSL/TLS</a>
+                <a href="#p1-phase3" class="nav-item">Phase 3: Postfix</a>
+                <a href="#p1-phase4" class="nav-item">Phase 4: Dovecot</a>
+                <a href="#p1-phase5" class="nav-item">Phase 5: Firewall</a>
+                <a href="#p1-phase6" class="nav-item">Phase 6: Services</a>
+                <a href="#p1-phase7" class="nav-item">Phase 7: Verification</a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Part 2: Ubuntu Client</div>
+                <a href="#p2-phase8" class="nav-item">Phase 8: Configuration</a>
+                <a href="#p2-phase9" class="nav-item">Phase 9: Thunderbird</a>
+                <a href="#p2-phase10" class="nav-item">Phase 10: Import & Config</a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Help</div>
+                <a href="#troubleshooting" class="nav-item">Troubleshooting</a>
+            </div>
+        </aside>
+
+        <main>
+            <div id="welcome" class="hero">
+                <h1>📧 SMTP Mail Server Setup Lab</h1>
+                <p>Complete Step-by-Step with Screenshot & Explanation Requirements</p>
+                <div class="purpose-box" style="margin-top: 2rem; border-left-color: var(--accent);">
+                    <h4>PURPOSE</h4>
+                    <p>This guide is designed for you to follow while setting up a FRESH Rocky Linux mail server and
+                        Ubuntu client. Take a screenshot after EVERY command and document what each command does.</p>
+                </div>
+            </div>
+
+            <section id="requirements">
+                <h2 class="section-title">🎯 Lab Requirements</h2>
+                <div class="card">
+                    <h3>System Specs</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+                        <div>
+                            <h4>What You Need</h4>
+                            <ul>
+                                <li>✅ Fresh Rocky Linux VM (Server)</li>
+                                <li>✅ Fresh Ubuntu VM (Client)</li>
+                                <li>✅ VirtualBox NAT Network</li>
+                                <li>✅ Screenshot tool ready</li>
+                                <li>✅ This guide open</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>IP Configuration</h4>
+                            <p><strong>Rocky Server:</strong> 192.168.200.3</p>
+                            <p><strong>Ubuntu Client:</strong> 192.168.200.80</p>
+                            <p><strong>Gateway:</strong> 192.168.200.2</p>
+                            <p><strong>Domain:</strong> bungkus.org</p>
+                            <p><strong>FQDN:</strong> bnaserver.bungkus.org</p>
+                        </div>
+                    </div>
+                    <div class="notes-box">
+                        <h4>User Account Info</h4>
+                        <p><strong>Username:</strong> dineesh | <strong>Password:</strong> Lab2026</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="documentation-req">
+                <h2 class="section-title">📋 Documentation Rules</h2>
+                <div class="card">
+                    <p>For <strong>EVERY COMMAND</strong> you must:</p>
+                    <ul>
+                        <li>✅ Take a screenshot showing the command AND its output</li>
+                        <li>✅ Write a brief explanation of what the command does</li>
+                        <li>✅ Note any important output or results</li>
+                    </ul>
+                    <div class="doc-section">
+                        <h4>Example Format Ref</h4>
+                        <pre style="font-size: 0.8rem; color: var(--text-muted);">
+Command: sudo hostnamectl set-hostname bnaserver.bungkus.org
+Explanation: This command sets the FQDN...
+[SCREENSHOT: Terminal output]
+Expected Output: No output means success...
+                    </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PART 1: ROCKY LINUX SERVER SETUP -->
+            <section id="p1-phase1">
+                <h2 class="section-title">PART 1: ROCKY LINUX SERVER SETUP</h2>
+                <div class="step-phase-tag">Phase 1: Initial System Configuration</div>
+
+                <!-- Step 1 -->
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <h3>Create User Account</h3>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <div class="code-header"><span class="lang-badge">bash</span><button
+                                    class="copy-btn">Copy</button></div>
+                            <pre>sudo adduser dineesh</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Creates a new system user account named "dineesh" that will be used for email
+                                authentication. Mail servers use Linux system accounts for user authentication.</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/384e72c5-a5a1-42f0-9115-d06b14108052"
+                                alt="Add User">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>The command entered</li>
+                                <li>Password prompts appearing</li>
+                                <li>Full name and user info prompts</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <div class="code-header"><span class="lang-badge">bash</span><button
+                                    class="copy-btn">Copy</button></div>
+                            <pre>sudo passwd dineesh</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Sets the password "Lab2026" for the dineesh user account. This password will be used
+                                later for SMTP/IMAP authentication when connecting with email clients.</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/b71a21fe-df88-4cf3-8120-29f38dea7112"
+                                alt="Set Passwd">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>Password prompt</li>
+                                <li>Success confirmation message</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <h3>Set Hostname</h3>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>sudo hostnamectl set-hostname bnaserver.bungkus.org</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Sets the Fully Qualified Domain Name (FQDN) of the server. This is critical because:</p>
+                            <ul>
+                                <li>Mail servers identify themselves using FQDN</li>
+                                <li>SSL certificates are issued to the FQDN</li>
+                                <li>Other mail servers use this for routing</li>
+                            </ul>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/555efc67-d7bd-4c9e-9fdc-82847b697bbb"
+                                alt="Set Hostname">
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>hostnamectl</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Verifies the hostname was set correctly. This displays system information including the
+                                static hostname, which should now be "bnaserver.bungkus.org".</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/47f329a0-9e59-4baf-8e76-5ab1e5d90385"
+                                alt="Hostnamectl">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>Static hostname field showing bnaserver.bungkus.org</li>
+                                <li>Operating system information</li>
+                                <li>Kernel version</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>hostname -f</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Displays only the FQDN (Fully Qualified Domain Name). This is a quick way to verify the
+                                hostname is correct before proceeding.</p>
+                        </div>
+                        <div class="expected-output">Expected Output: <code>bnaserver.bungkus.org</code></div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/72db8e84-30b5-466c-b4e3-8d424b7dbd01"
+                                alt="Hostname F">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <h3>Configure Hosts File</h3>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>sudo nano /etc/hosts</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Opens the hosts file for editing. This file maps IP addresses to hostnames locally,
+                                allowing the server to resolve its own hostname without DNS.</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/9a1a0a64-72bb-47e0-b4c0-b089c22e88a0"
+                                alt="Nano Hosts 1">
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/f84f8b68-c2a4-4b2e-a9d3-cce78f9c3651"
+                                alt="Nano Hosts 2">
+                        </div>
+
+                        <div class="notes-box">
+                            <h4>Add This Line</h4>
+                            <p><code>192.168.200.3 bnaserver.bungkus.org bnaserver</code></p>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>EXPLANATION OF ENTRY</h4>
+                            <ul>
+                                <li>"When you see bnaserver.bungkus.org or bnaserver, use IP 192.168.200.3"</li>
+                                <li>This is essential for the mail server to identify itself correctly</li>
+                            </ul>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/839505f1-3441-4693-9332-c8b76dddce1a"
+                                alt="Edited Hosts">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>The complete /etc/hosts file with your addition</li>
+                                <li>Highlight the line you added</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="sub-title">Verify Save</div>
+                        <div class="code-container">
+                            <pre>cat /etc/hosts</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Displays the contents of the hosts file to verify your changes were saved correctly.</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/8533d07e-0415-49c0-856f-61e9c0f3ee6e"
+                                alt="Cat Hosts Verification">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>Verify the line you added is present</li>
+                                <li>Show localhost and other default entries</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <h3>Network Verification</h3>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>ip addr show</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Displays all network interfaces and their IP addresses. Use this to verify your server
+                                has the correct IP (192.168.200.3) assigned.</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/6e3beb8e-8abb-4896-904c-dc7505d93abb"
+                                alt="IP Addr Show">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>Interface name (usually enp0s3)</li>
+                                <li>IP address 192.168.200.3</li>
+                                <li>Netmask and broadcast</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>ip route</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Shows the routing table, including the default gateway. Critical check as hostname
+                                changes can sometimes remove the gateway!</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/99c5b36e-b837-4b08-aebc-c4ad0542e444"
+                                alt="IP Route">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>Default route (check if you have "default via 192.168.200.X")</li>
+                                <li>Local network route</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="notes-box">
+                        <h4>🚨 IMPORTANT GATEWAY NOTE</h4>
+                        <p>If you don't see ANY "default via" line, you need to add one!</p>
+                        <pre>sudo ip route add default via 192.168.200.1 dev enp0s3</pre>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>ping -c 3 8.8.8.8</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Tests internet connectivity by pinging Google's DNS server.</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/24aa5ce0-8df1-49cf-8ea2-2c8b7bd61c34"
+                                alt="Ping Fail Normal">
+                        </div>
+                        <div class="notes-box">
+                            <h4>⚠️ VirtualBox NAT Limitation</h4>
+                            <p>If ping fails with "Network unreachable", this is NORMAL! VirtualBox NAT blocks ICMP
+                                packets. In documentation, explain this and use curl instead.</p>
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>curl -I https://google.com</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Tests HTTP/HTTPS connectivity by fetching headers from Google. More reliable than ping in
+                                VirtualBox.</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/4e1133e9-ae51-4446-bbe1-ebbb00ac01bb"
+                                alt="Curl Google">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>HTTP status code (301 or 302)</li>
+                                <li>Confirms working internet</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">5</div>
+                        <h3>Install Required Packages</h3>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>sudo dnf update -y</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Updates all currently installed packages to their latest versions. Ensures latest
+                                security patches.</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/2a8f8d8e-edb6-4eeb-baf6-3fb0dbb7d2c6"
+                                alt="DNF Update 1">
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/a104f412-28ff-4f0f-b09c-47ceedd0f479"
+                                alt="DNF Update 2">
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>sudo dnf install postfix dovecot -y</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Installs Postfix (MTA - handles SMTP) and Dovecot (IMAP/POP3 server).</p>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/90f9cce7-ce3a-4178-b3da-1954ab372e5a"
+                                alt="DNF Install 1">
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/52e82512-7dd5-4b52-b4c9-791dc0e029bb"
+                                alt="DNF Install 2">
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="sub-title">Package Check</div>
+                        <div class="code-container">
+                            <pre>rpm -qa | grep postfix
+rpm -qa | grep dovecot</pre>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/c68570a5-3b9b-4977-b4c2-7654ac2dc420"
+                                alt="Check Postfix">
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/8fe362b6-1953-46b4-b313-b3470840436c"
+                                alt="Check Dovecot">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Phase 2 -->
+            <section id="p1-phase2">
+                <h2 class="section-title">Phase 2: SSL/TLS Certificate Generation</h2>
+
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">6</div>
+                        <h3>Generate Self-Signed Certificate</h3>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>sudo openssl req -new -x509 -days 365 -nodes \
+  -out /etc/pki/tls/certs/bnaserver.pem \
+  -keyout /etc/pki/tls/private/bnaserver.key \
+  -subj "/C=MY/ST=KL/L=APU/O=SNA/CN=bnaserver.bungkus.org"</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Generates a self-signed SSL/TLS certificate (valid 365 days). Broken down:</p>
+                            <ul>
+                                <li><code>-nodes</code>: No passphrase for automated service start.</li>
+                                <li><code>CN=bnaserver.bungkus.org</code>: Critical hostname match.</li>
+                            </ul>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/9a3c1a22-c5fc-41e6-9b8b-6fa46f08fd17"
+                                alt="OpenSSL Generate">
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="sub-title">Verify Files</div>
+                        <div class="code-container">
+                            <pre>sudo ls -l /etc/pki/tls/certs/bnaserver.pem
+sudo ls -l /etc/pki/tls/private/bnaserver.key</pre>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/939e5428-cfc4-41d4-b416-6195794bd76f"
+                                alt="ls pem">
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/c80f46f5-b5b2-42c4-bd75-c347fac25ea2"
+                                alt="ls key">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">7</div>
+                        <h3>Permissions & Details</h3>
+                    </div>
+                    <div class="command-sub-step">
+                        <div class="code-container">
+                            <pre>sudo chmod 600 /etc/pki/tls/private/bnaserver.key
+sudo chmod 644 /etc/pki/tls/certs/bnaserver.pem</pre>
+                        </div>
+                        <div class="purpose-box">
+                            <h4>PURPOSE/EXPLANATION</h4>
+                            <p>Secures the private key (600 - root only) and makes the cert public (644). Only root
+                                should ever touch the private key.</p>
+                        </div>
+                    </div>
+
+                    <div class="command-sub-step">
+                        <div class="sub-title">Human-Readable Inspection</div>
+                        <div class="code-container">
+                            <pre>sudo openssl x509 -in /etc/pki/tls/certs/bnaserver.pem -text -noout</pre>
+                        </div>
+                        <div class="image-wrapper">
+                            <img src="https://github.com/user-attachments/assets/73b35baa-b961-49e0-9f2c-3cbc19ea5a53"
+                                alt="Cert Text">
+                        </div>
+                        <div class="doc-section">
+                            <h4>WHAT TO DOCUMENT</h4>
+                            <ul>
+                                <li>Subject showing CN=bnaserver.bungkus.org</li>
+                                <li>Validity dates and Issuer info</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Phase 3 -->
+            <section id="p1-phase3">
+                <h2 class="section-title">Phase 3: Postfix Configuration</h2>
+
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">8</div>
+                        <h3>Backup Config</h3>
+                    </div>
+                    <div class="code-container">
+                        <pre>sudo cp /etc/postfix/main.cf /etc/postfix/main.cf.backup</pre>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/1e6e8fb5-42d9-4114-b741-dd34f94395e4"
+                            alt="Postfix Backup"></div>
+                </div>
+
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">9</div>
+                        <h3>Edit main.cf</h3>
+                    </div>
+                    <div class="code-container">
+                        <pre>sudo nano /etc/postfix/main.cf</pre>
+                    </div>
+                    <div class="purpose-box">
+                        <h4>EXPLANATION OF SETTINGS</h4>
+                        <ul>
+                            <li><code>myhostname</code>: Server's FQDN ID</li>
+                            <li><code>mydestination</code>: Final destination domains</li>
+                            <li><code>home_mailbox = Maildir/</code>: Modern directory-based storage</li>
+                            <li><code>smtpd_tls_security_level = may</code>: STARTTLS offer on port 25</li>
+                            <li><code>smtpd_sasl_type = dovecot</code>: Use Dovecot for user auth</li>
+                        </ul>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/401ac7fe-11ec-4ef3-81d6-ef4a18e0672d"
+                            alt="M1"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/a2938f7a-5519-428a-ae64-5f5798c5f2df"
+                            alt="M2"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/7367692e-2960-444c-8928-27797386931d"
+                            alt="M3"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/aacf0735-c688-41ff-8ac2-91c894df3a57"
+                            alt="M4"></div>
+
+                    <div class="sub-title">Verify Non-Default Settings</div>
+                    <div class="code-container">
+                        <pre>sudo postconf -n</pre>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/2142ce9c-b78d-4628-b88c-057dadf11de0"
+                            alt="Postconf n"></div>
+                </div>
+
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">10</div>
+                        <h3>Postfix Master (Ports)</h3>
+                    </div>
+                    <p>Edit <code>/etc/postfix/master.cf</code> to enable Secure Submission (587) and SMTPS (465).</p>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/40a04588-1bf6-4a7d-aa1a-91e8158a1299"
+                            alt="Master 1"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/27a02d9b-7134-44df-87eb-8805add01c3c"
+                            alt="Master 2"></div>
+                </div>
+            </section>
+
+            <!-- Phase 4 -->
+            <section id="p1-phase4">
+                <h2 class="section-title">Phase 4: Dovecot Configuration</h2>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">11</div>
+                        <h3>Mail Storage Location</h3>
+                    </div>
+                    <p>Edit <code>10-mail.conf</code>. Purpose: Matching Postfix's Maildir setup.</p>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/cde6c42b-cbc8-4777-956f-67490ce2ea26"
+                            alt="D1"></div>
+                </div>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">12</div>
+                        <h3>Dovecot SSL</h3>
+                    </div>
+                    <p>Edit <code>10-ssl.conf</code>. Force SSL and point to your PEM/KEY files.</p>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/d8f3e924-35ee-499d-afe4-398182dc978e"
+                            alt="D2"></div>
+                </div>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">13-14</div>
+                        <h3>Auth & Master Socket</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/fd2e5587-79de-45ef-b7cb-b7bf1904f16a"
+                            alt="D3"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/51e9453a-a1f5-45c6-b498-6ce6c387a6cf"
+                            alt="D4"></div>
+                    <div class="purpose-box">
+                        <h4>EXPLANATION OF SOCKET</h4>
+                        <p>Creates a Unix socket in Postfix's private directory so Postfix can ask Dovecot to verify
+                            user passwords.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Phase 5 -->
+            <section id="p1-phase5">
+                <h2 class="section-title">Phase 5: Firewall Setup</h2>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">15</div>
+                        <h3>Enable Firewall Services</h3>
+                    </div>
+                    <div class="code-container">
+                        <pre>sudo firewall-cmd --permanent --add-service={smtp,smtps}
+sudo firewall-cmd --permanent --add-port={587,143,993}/tcp
+sudo firewall-cmd --reload</pre>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/24801f6a-ea65-42a1-847d-aa68b564a267"
+                            alt="FW"></div>
+                    <div class="doc-section">
+                        <h4>WHAT TO DOCUMENT</h4>
+                        <ul>
+                            <li>Compare before and after firewall status</li>
+                            <li>Confirm 5 new allow rules are active</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Phase 6 -->
+            <section id="p1-phase6">
+                <h2 class="section-title">Phase 6: Service Operations</h2>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">16-17</div>
+                        <h3>Start & Enable</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/cadcfebd-7a97-45b2-ae95-283070d4ff01"
+                            alt="S1"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/a6bc8901-1216-4a76-9af8-d72c668f7745"
+                            alt="S2"></div>
+                </div>
+            </section>
+
+            <!-- Phase 7 -->
+            <section id="p1-phase7">
+                <h2 class="section-title">Phase 7: Comprehensive Verification</h2>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">18</div>
+                        <h3>Port Listening Status</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/154a322b-9e07-442d-b773-ee95699c1a12"
+                            alt="V1"></div>
+                </div>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">19-23</div>
+                        <h3>Cross-Protocol TLS Tests</h3>
+                    </div>
+                    <div class="purpose-box">
+                        <h4>PURPOSE</h4>
+                        <p>Verifies Certificate CN, TLS Handshake success, and Banner integrity for all 5 ports.</p>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/f6dfbb22-2360-42fa-b2e3-8208d9d8dc6a"
+                            alt="V2"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/3e418311-ae14-4b21-8c18-701c9749c7e6"
+                            alt="V3"></div>
+                </div>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">24</div>
+                        <h3>SMTP Manual Injection</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/1a4e170e-a249-42ab-a031-94411f15f9e2"
+                            alt="V4"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/57b2eeb8-aec2-4ee8-8936-ea4ab1b815fa"
+                            alt="V5"></div>
+                </div>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">25</div>
+                        <h3>Queue & Logs Check</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/45283334-2011-4259-bd2f-bf84cdac5572"
+                            alt="V6"></div>
+                </div>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">26</div>
+                        <h3>Manual IMAP Retrieval</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/90a2b859-cbb9-44ff-84a0-e948a8fd12f0"
+                            alt="V7"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/c0563d46-f15c-43d6-a233-96e7a892b2b4"
+                            alt="V8"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/7d20f9a8-96fc-41ec-a596-0a4acc8c959a"
+                            alt="V9"></div>
+                </div>
+            </section>
+
+            <!-- PART 2 -->
+            <section id="p2-phase8">
+                <h2 class="section-title">PART 2: UBUNTU CLIENT SETUP</h2>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">27</div>
+                        <h3>Ubuntu Configuration</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/8e1b8612-71ae-4538-8aec-ca9d1b7480af"
+                            alt="U1"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/5913146b-a093-4c0a-a4c9-0931caf8b3fc"
+                            alt="U2"></div>
+                    <div class="purpose-box">
+                        <h4>PURPOSE</h4>
+                        <p>Enables the Ubuntu client to find 'bnaserver.bungkus.org' by mapping it to '192.168.200.3'.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="p2-phase9">
+                <h2 class="section-title">Phase 9: Thunderbird Install</h2>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">28-31</div>
+                        <h3>Deployment Specs</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/c758ba46-3a07-432b-8eb6-5e049d8dd2ea"
+                            alt="T1"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/387d79c3-6b93-4b20-9add-fae990d5b9fa"
+                            alt="T2"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/b8bf9cce-a3e4-4222-9cb0-bc8ebd3d24f8"
+                            alt="T3"></div>
+                </div>
+            </section>
+
+            <section id="p2-phase10">
+                <h2 class="section-title">Phase 10: Import & Configuration</h2>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">32</div>
+                        <h3>Python Certificate Pipeline</h3>
+                    </div>
+                    <div class="purpose-box">
+                        <h4>PURPOSE</h4>
+                        <p>Starts a temporary web server on port 80 to "host" the certificate file so the client can
+                            download it easily.</p>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/8bbcd397-be48-4cc8-a6a7-932c287eada3"
+                            alt="P1"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/93db93a7-2124-41b8-bbcb-7e6ba6f6744e"
+                            alt="P2"></div>
+                </div>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">33-36</div>
+                        <h3>Manual Configuration Protocol</h3>
+                    </div>
+                    <div class="notes-box">
+                        <h4>CRITICAL SETTINGS</h4>
+                        <ul>
+                            <li>Protocol: IMAP (993) / SMTP (465)</li>
+                            <li>SSL: SSL/TLS Mandatory</li>
+                            <li>Auth: Normal Password</li>
+                        </ul>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/66a1d0f6-9d21-4e95-8101-c071bb5484c5"
+                            alt="C1"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/a6f4e624-2387-48eb-a8b2-85fbcbfdace8"
+                            alt="C2"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/69148fca-4da8-4fdc-b2dd-b577733fadc4"
+                            alt="C3"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/fb4bca3f-d1ec-4e41-9c47-f313cffe639b"
+                            alt="C4"></div>
+                </div>
+                <div class="card">
+                    <div class="step-header">
+                        <div class="step-number">37</div>
+                        <h3>Verify Success (Tada!)</h3>
+                    </div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/73ab8fce-239a-4666-8ed5-7e52c4a8ff2c"
+                            alt="Done1"></div>
+                    <div class="image-wrapper"><img
+                            src="https://github.com/user-attachments/assets/76fa8ee6-0c3f-4d84-aa47-6e7a9d33781c"
+                            alt="Done2"></div>
+                </div>
+            </section>
+
+            <section id="troubleshooting">
+                <h2 class="section-title">Critical Troubleshooting Logs</h2>
+
+                <!-- Problem 1 -->
+                <div class="card" style="border-left: 4px solid #94a3b8;">
+                    <div class="step-phase-tag">Initial Hurdles</div>
+                    <h3>PROBLEM 1: "Failed to Find Settings" Error</h3>
+                    <p class="explanation">Thunderbird couldn't auto-detect the server settings automatically and
+                        displayed a warning banner during the account creation phase.</p>
+                    <div class="image-wrapper" style="max-width: 600px;">
+                        <img src="https://github.com/user-attachments/assets/ced25139-fc3a-44d1-a0bf-2881c16c98d7"
+                            alt="Settings Error">
+                    </div>
+                    <div class="notes-box">
+                        <h4>Resolution</h4>
+                        <p>This occurs when SRV/DNS records aren't set up. The manual configuration performed in
+                            <strong>Phase 10</strong> bypasses this by explicitly defining ports and protocols.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Problem 2 -->
+                <div class="card" style="border-left: 4px solid #ef4444;">
+                    <div class="step-phase-tag" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">Issue
+                        Identified</div>
+                    <h3>PROBLEM 2: "No Information Available" Certificate Hang</h3>
+                    <p class="explanation">When trying to add a security exception, Thunderbird displayed "Unable to
+                        obtain identification status for this site" and hung indefinitely.</p>
+
+                    <div class="image-wrapper" style="max-width: 600px;">
+                        <img src="https://github.com/user-attachments/assets/4c5976bb-404c-47b8-883f-555052d98688"
+                            alt="Hang Screenshot">
+                    </div>
+
+                    <div class="purpose-box" style="border-left-color: #ef4444;">
+                        <h4>ROOT CAUSE</h4>
+                        <p>Thunderbird attempts to validate our self-signed certificate using <strong>OCSP (Online
+                                Certificate Status Protocol)</strong>. This requires internet access to a Certificate
+                            Authority (CA) that doesn't exist for our local lab environment, causing the client to wait
+                            indefinitely for a response that never comes.</p>
+                    </div>
+
+                    <div class="notes-box"
+                        style="border-left-color: var(--accent); background: rgba(16, 185, 129, 0.05);">
+                        <h4 style="color: var(--accent);">🛠️ THE FIX: Disable OCSP Validation</h4>
+                        <ol style="margin-left: 1.5rem; color: var(--text-muted); font-size: 0.95rem;">
+                            <li>Go to <strong>Settings</strong> in Thunderbird.</li>
+                            <li>Search for <strong>"OCSP"</strong> in the search bar.</li>
+                            <li><strong>UNCHECK</strong> the box: <em>"Query OCSP responder servers to confirm the
+                                    current validity of certificates"</em>.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Problem 3 -->
+                <div class="card" style="border-left: 4px solid #f59e0b;">
+                    <div class="step-phase-tag" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">Performance
+                        Issue</div>
+                    <h3>PROBLEM 3: "Checking Password" Infinite Loop</h3>
+                    <p class="explanation">Even after attempting to bypass the certificate screen, Thunderbird got stuck
+                        on a "Checking password..." spinner for an extended period.</p>
+
+                    <div class="image-wrapper" style="max-width: 600px;">
+                        <img src="https://github.com/user-attachments/assets/c712dd66-9206-4cb2-bf2c-ad89eb7e7526"
+                            alt="Infinite Loop">
+                    </div>
+
+                    <div class="warning-box">
+                        <h4>❌ FAILED ATTEMPT</h4>
+                        <p>Attempting to use the "Add Exception" dialog with the location
+                            <code>https://bnaserver.bungkus.org:993</code> failed because the <code>https://</code>
+                            protocol is incorrect for a mail server connection, leading back to the "No Information
+                            Available" hang.
+                        </p>
+                    </div>
+
+                    <div class="notes-box"
+                        style="border-left-color: var(--primary); background: rgba(99, 102, 241, 0.05);">
+                        <h4 style="color: var(--primary);">🚀 THE FIX: Use IP Address for Direct Connectivity</h4>
+                        <p style="color: var(--text-muted);">Change both the <strong>Incoming</strong> and
+                            <strong>Outgoing</strong> server hostnames to the literal IP address:
+                            <code>192.168.200.3</code>.
+                        </p>
+                        <p style="margin-top:0.5rem; font-size: 0.9rem; font-style: italic;">Why? This forces a direct
+                            connection and bypasses local DNS or hostname resolution delays/errors that contribute to
+                            the infinite checking loop.</p>
+                    </div>
+                </div>
+
+                <!-- Final Victory -->
+                <div class="card" style="border: 2px solid var(--accent); background: rgba(16, 185, 129, 0.02);">
+                    <div class="step-header">
+                        <i class="fa-solid fa-trophy" style="color: var(--accent); font-size: 2rem;"></i>
+                        <h3 style="color: var(--accent);">SUCCESS: FINAL VICTORY</h3>
+                    </div>
+                    <p class="explanation" style="color: var(--text-main);">After applying the OCSP and IP-connectivity
+                        fixes, Thunderbird successfully recognizes the local certificate, validates credentials
+                        instantly, and grants access to the Inbox.</p>
+                    <div class="image-wrapper">
+                        <img src="https://github.com/user-attachments/assets/76fa8ee6-0c3f-4d84-aa47-6e7a9d33781c"
+                            alt="Final Success">
+                        <div class="image-caption">Mission Accomplished: Fully encrypted local mail delivery.</div>
+                    </div>
+                </div>
+            </section>
+
+            <footer>
+                <p>© 2026 Mailer Lab - Built with precision for Advanced Networking</p>
+            </footer>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
